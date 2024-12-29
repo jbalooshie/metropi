@@ -3,7 +3,6 @@ import time
 from typing import List, Dict
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
 from PIL import Image, ImageDraw, ImageFont
-import threading
 import configparser
 import os
 
@@ -115,11 +114,40 @@ class LEDMatrixDisplay:
             self.font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 8)
         except:
             self.font = ImageFont.load_default()
-    
+
+    def truncate_text(self, text: str, max_width: int) -> str:
+        """
+        Truncate text to fit within a given width.
+        
+        Args:
+            text (str): Text to truncate
+            max_width (int): Maximum width in pixels
+            
+        Returns:
+            str: Truncated text
+        """
+        # Get text size
+        text_width = self.draw.textlength(text, font=self.font)
+        
+        # If text fits, return it unchanged
+        if text_width <= max_width:
+            return text
+            
+        # If text is too long, truncate it
+        while text and text_width > max_width:
+            text = text[:-1]
+            text_width = self.draw.textlength(text, font=self.font)
+            
+        return text
+
     def update_display(self, trains: List[Dict]):
         """Update the LED matrix display with train information."""
         # Clear the image
         self.draw.rectangle((0, 0, self.matrix.width, self.matrix.height), fill=(0, 0, 0))
+        
+        # Calculate available width for text
+        line_indicator_width = 12  # Width of colored rectangle plus small gap
+        available_width = self.matrix.width - line_indicator_width - 2  # Subtract padding
         
         # Display each train's information
         y_position = 0
@@ -130,9 +158,31 @@ class LEDMatrixDisplay:
             # Draw line indicator
             self.draw.rectangle((0, y_position, 10, y_position + 8), fill=line_color)
             
-            # Draw train information
-            text = f"{train['Destination']} {train['Min']}min"
-            self.draw.text((12, y_position), text, font=self.font, fill=(255, 255, 255))
+            # Format destination and minutes
+            dest_text = train['Destination']
+            mins_text = f" {train['Min']}m"
+            
+            # Calculate space needed for minutes
+            mins_width = self.draw.textlength(mins_text, font=self.font)
+            
+            # Calculate available space for destination
+            dest_available_width = available_width - mins_width
+            
+            # Truncate destination if needed
+            dest_text = self.truncate_text(dest_text, dest_available_width)
+            
+            # Draw destination and minutes
+            self.draw.text((line_indicator_width, y_position), 
+                         dest_text, 
+                         font=self.font, 
+                         fill=(255, 255, 255))
+            
+            # Draw minutes right after destination
+            mins_x = line_indicator_width + self.draw.textlength(dest_text, font=self.font)
+            self.draw.text((mins_x, y_position), 
+                         mins_text, 
+                         font=self.font, 
+                         fill=(255, 255, 255))
             
             y_position += 11  # Space between trains
         
