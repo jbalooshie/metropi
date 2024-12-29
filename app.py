@@ -140,6 +140,24 @@ class LEDMatrixDisplay:
             
         return text
 
+    def format_time(self, min_value: str) -> str:
+        """
+        Format the time/status value appropriately.
+        
+        Args:
+            min_value (str): The 'Min' value from the train data
+            
+        Returns:
+            str: Formatted time string
+        """
+        # Check if min_value is numeric
+        try:
+            int(min_value)
+            return f" {min_value}m"
+        except ValueError:
+            # For special values like 'ARR' or 'BRD', just add a space
+            return f" {min_value}"
+
     def update_display(self, trains: List[Dict]):
         """Update the LED matrix display with train information."""
         # Clear the image
@@ -158,29 +176,29 @@ class LEDMatrixDisplay:
             # Draw line indicator
             self.draw.rectangle((0, y_position, 10, y_position + 8), fill=line_color)
             
-            # Format destination and minutes
+            # Format destination and time/status
             dest_text = train['Destination']
-            mins_text = f" {train['Min']}m"
+            time_text = self.format_time(train['Min'])
             
-            # Calculate space needed for minutes
-            mins_width = self.draw.textlength(mins_text, font=self.font)
+            # Calculate space needed for time
+            time_width = self.draw.textlength(time_text, font=self.font)
             
             # Calculate available space for destination
-            dest_available_width = available_width - mins_width
+            dest_available_width = available_width - time_width
             
             # Truncate destination if needed
             dest_text = self.truncate_text(dest_text, dest_available_width)
             
-            # Draw destination and minutes
+            # Draw destination and time
             self.draw.text((line_indicator_width, y_position), 
                          dest_text, 
                          font=self.font, 
                          fill=(255, 255, 255))
             
-            # Draw minutes right after destination
-            mins_x = line_indicator_width + self.draw.textlength(dest_text, font=self.font)
-            self.draw.text((mins_x, y_position), 
-                         mins_text, 
+            # Draw time right after destination
+            time_x = line_indicator_width + self.draw.textlength(dest_text, font=self.font)
+            self.draw.text((time_x, y_position), 
+                         time_text, 
                          font=self.font, 
                          fill=(255, 255, 255))
             
@@ -188,7 +206,7 @@ class LEDMatrixDisplay:
         
         # Update the matrix
         self.matrix.SetImage(self.image)
-
+    
 def main_loop(config: configparser.ConfigParser):
     """Main program loop."""
     # Initialize display
