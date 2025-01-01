@@ -1,0 +1,15 @@
+[Unit]
+Description=WMATA Train Display
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/wmata-display
+ExecStart=/usr/bin/python3 /home/pi/wmata-display/train_tracker.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
