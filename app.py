@@ -5,6 +5,7 @@ from rgbmatrix import RGBMatrix, RGBMatrixOptions
 from PIL import Image, ImageDraw, ImageFont
 import configparser
 import os
+from datetime import datetime, time as dt_time
 
 def load_config() -> dict:
     """
@@ -105,6 +106,9 @@ class LEDMatrixDisplay:
         # Create matrix instance
         self.matrix = RGBMatrix(options=options)
         
+        # Set initial brightness
+        self.update_brightness()
+        
         # Create a blank image for drawing
         self.image = Image.new('RGB', (self.matrix.width, self.matrix.height))
         self.draw = ImageDraw.Draw(self.image)
@@ -114,6 +118,24 @@ class LEDMatrixDisplay:
             self.font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 8)
         except:
             self.font = ImageFont.load_default()
+
+    def is_night_time(self) -> bool:
+        """Check if current time is between 10 PM and 5 AM"""
+        current_time = datetime.now().time()
+        night_start = dt_time(22, 0)  # 10 PM
+        night_end = dt_time(5, 0)    # 5 AM
+        
+        if night_start <= night_end:
+            return night_start <= current_time <= night_end
+        else:  # Handle case when period spans midnight
+            return current_time >= night_start or current_time <= night_end
+
+    def update_brightness(self):
+        """Update the matrix brightness based on time of day"""
+        if self.is_night_time():
+            self.matrix.brightness = 50  # 50% brightness
+        else:
+            self.matrix.brightness = 100  # Full brightness
 
     def truncate_text(self, text: str, max_width: int) -> str:
         """
@@ -126,14 +148,11 @@ class LEDMatrixDisplay:
         Returns:
             str: Truncated text
         """
-        # Get text size
         text_width = self.draw.textlength(text, font=self.font)
         
-        # If text fits, return it unchanged
         if text_width <= max_width:
             return text
             
-        # If text is too long, truncate it
         while text and text_width > max_width:
             text = text[:-1]
             text_width = self.draw.textlength(text, font=self.font)
@@ -150,22 +169,23 @@ class LEDMatrixDisplay:
         Returns:
             str: Formatted time string
         """
-        # Check if min_value is numeric
         try:
             int(min_value)
             return f" {min_value}m"
         except ValueError:
-            # For special values like 'ARR' or 'BRD', just add a space
             return f" {min_value}"
 
     def update_display(self, trains: List[Dict]):
         """Update the LED matrix display with train information."""
+        # Update brightness based on time of day
+        self.update_brightness()
+        
         # Clear the image
         self.draw.rectangle((0, 0, self.matrix.width, self.matrix.height), fill=(0, 0, 0))
         
         # Calculate available width for text
-        line_indicator_width = 12  # Width of colored rectangle plus small gap
-        available_width = self.matrix.width - line_indicator_width - 2  # Subtract padding
+        line_indicator_width = 12
+        available_width = self.matrix.width - line_indicator_width - 2
         
         # Display each train's information
         y_position = 0
@@ -202,7 +222,7 @@ class LEDMatrixDisplay:
                          font=self.font, 
                          fill=(255, 255, 255))
             
-            y_position += 11  # Space between trains
+            y_position += 11
         
         # Update the matrix
         self.matrix.SetImage(self.image)
