@@ -1,13 +1,13 @@
 [Unit]
-Description=WMATA Train Display
+Description=metropi
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
 User=pi
-WorkingDirectory=/home/pi/wmata-display
-ExecStart=/usr/bin/python3 /home/pi/wmata-display/train_tracker.py
+WorkingDirectory=/home/jboshier1991/metropi
+ExecStart=/usr/bin/python3 /home/jboshier1991/metropi/app.py
 Restart=always
 RestartSec=10
 
