@@ -1,5 +1,7 @@
 # metropi
 
+![Photo](/photos/IMG_4362.JPG)
+
 This is an evolution of a project I built in spring 2024, [buspi](https://github.com/jbalooshie/buspi). While buspi displayed the times for a nearby MTA bus stop, metropi displays the times for a nearby WMATA metro station.
 
 Key Features:
