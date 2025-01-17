@@ -10,7 +10,7 @@ Key Features:
 - Dims by 50% from 10pm-5am.
 - Uses a config.ini file that can be modified for a differnt station, LED panel size, and update frequency.
 
-**BIG DISCLAIMER**:
+**BIG DISCLAIMER**: The majority of this code was generated using Claude 3.5 Sonnet, and is not my original work. You can see my original work on the previous project, linked above.
 
 ## Hardware Needed
 
