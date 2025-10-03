@@ -5,16 +5,18 @@ import time
 
 # Configuration for the matrix
 options = RGBMatrixOptions()
-options.rows = 32  # Adjust to your panel height
-options.cols = 64  # Adjust to your panel width
+options.rows = 32  # Change this to match your panel
+options.cols = 64  # Change this to match your panel
 options.chain_length = 1
 options.parallel = 1
-options.hardware_mapping = 'adafruit-hat'
+options.hardware_mapping = 'adafruit-hat'  # Try 'adafruit-hat', 'adafruit-hat-pwm', or 'regular'
 options.brightness = 70
+options.gpio_slowdown = 4  # Try values between 1-4 if you see flickering/distortion
+options.disable_hardware_pulsing = True  # Can help with some displays
 
 matrix = RGBMatrix(options=options)
 
-# Load font using PIL (same as your train app)
+# Load font using PIL
 try:
     font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 12)
 except:
@@ -23,14 +25,7 @@ except:
 # Your message
 message = "Happy Birthday! Love you!"
 
-# Get text dimensions
-dummy_image = Image.new('RGB', (1, 1))
-dummy_draw = ImageDraw.Draw(dummy_image)
-text_bbox = dummy_draw.textbbox((0, 0), message, font=font)
-text_width = text_bbox[2] - text_bbox[0]
-text_height = text_bbox[3] - text_bbox[1]
-
-# Starting position (start off-screen to the right)
+# Starting position
 pos = matrix.width
 
 try:
@@ -39,22 +34,21 @@ try:
         image = Image.new('RGB', (matrix.width, matrix.height))
         draw = ImageDraw.Draw(image)
         
-        # Draw text at current position
-        # Pink color (255, 0, 128)
-        draw.text((pos, (matrix.height - text_height) // 2), message, font=font, fill=(255, 0, 128))
+        # Draw text - simple white color first to test
+        draw.text((pos, 10), message, font=font, fill=(255, 255, 255))
         
         # Display on matrix
         matrix.SetImage(image)
         
         # Move text to the left
-        pos -= 1
+        pos -= 2
         
-        # Reset position when text has scrolled completely off screen
-        if pos + text_width < 0:
+        # Reset position
+        if pos < -200:  # Adjust based on message length
             pos = matrix.width
         
-        # Control scroll speed (lower = faster)
-        time.sleep(0.03)
+        # Control scroll speed
+        time.sleep(0.05)
 
 except KeyboardInterrupt:
     matrix.Clear()
