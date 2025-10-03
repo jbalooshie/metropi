@@ -23,9 +23,9 @@ except:
 
 # Message parts with different colors
 message_parts = [
-    ("Happy ", (255, 0, 128)),    # Pink
+    ("Happy   ", (255, 0, 128)),    # Pink
     ("30", (255, 215, 0)),        # Gold
-    ("th", (0, 191, 255))         # Sky blue
+    ("th!!", (0, 191, 255))         # Sky blue
 ]
 
 # Calculate total text width
